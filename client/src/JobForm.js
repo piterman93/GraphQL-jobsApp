@@ -1,50 +1,94 @@
-import React, { Component } from 'react';
+import React, { useState } from "react";
+import { CREATE_JOB } from "./graphQL/request";
+import { useMutation } from "@apollo/client";
+import { useHistory } from "react-router-dom";
+import { getAccessToken, isLoggedIn } from "./auth";
 
-export class JobForm extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {title: '', description: ''};
-  }
+const JobForm = () => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-  handleChange(event) {
-    const {name, value} = event.target;
-    this.setState({[name]: value});
-  }
+  const history = useHistory();
 
-  handleClick(event) {
+  //user has to be logged in and we need to pass headers with token
+  const isUserLogged = isLoggedIn();
+  const token = getAccessToken();
+
+  const headers = {
+    authorization: isUserLogged ? `Bearer ${token}` : "",
+  };
+
+  const [createJob, { loading, error, data }] = useMutation(CREATE_JOB, {
+    context: {
+      headers,
+    },
+  });
+
+  const handleTitleChange = (event) => {
+    setTitle(event.target.value);
+  };
+  const handleDescriptionChange = (event) => {
+    setDescription(event.target.value);
+  };
+
+  const handleClick = (event) => {
     event.preventDefault();
-    console.log('should post a new job:', this.state);
+
+    const input = { title, description };
+    createJob({ variables: { input } }).then((data) => {
+      const { id } = data.data.job;
+      history.push({
+        pathname: `/jobs/:${id}`,
+        state: { id },
+      });
+    });
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) {
+    return <div>Error...</div>;
   }
 
-  render() {
-    const {title, description} = this.state;
-    return (
-      <div>
-        <h1 className="title">New Job</h1>
-        <div className="box">
-          <form>
-            <div className="field">
-              <label className="label">Title</label>
-              <div className="control">
-                <input className="input" type="text" name="title" value={title}
-                  onChange={this.handleChange.bind(this)} />
-              </div>
+  return (
+    <div>
+      <h1 className="title">New Job</h1>
+      <div className="box">
+        <form>
+          <div className="field">
+            <label className="label">Title</label>
+            <div className="control">
+              <input
+                className="input"
+                type="text"
+                name="title"
+                value={title}
+                onChange={handleTitleChange}
+              />
             </div>
-            <div className="field">
-              <label className="label">Description</label>
-              <div className="control">
-                <textarea className="input" style={{height: '10em'}}
-                  name="description" value={description} onChange={this.handleChange.bind(this)} />
-              </div>
+          </div>
+          <div className="field">
+            <label className="label">Description</label>
+            <div className="control">
+              <textarea
+                className="input"
+                style={{ height: "10em" }}
+                name="description"
+                value={description}
+                onChange={handleDescriptionChange}
+              />
             </div>
-            <div className="field">
-              <div className="control">
-                <button className="button is-link" onClick={this.handleClick.bind(this)}>Submit</button>
-              </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <button className="button is-link" onClick={handleClick}>
+                Submit
+              </button>
             </div>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+export default JobForm;

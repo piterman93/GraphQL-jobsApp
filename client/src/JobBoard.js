@@ -1,14 +1,22 @@
-import React, { Component } from 'react';
-import { JobList } from './JobList';
-const { jobs } = require('./fake-data');
+import { LOAD_JOBS } from "./graphQL/request";
+import React from "react";
+import { JobList } from "./JobList";
+import { useQuery } from "@apollo/client";
 
-export class JobBoard extends Component {
-  render() {
-    return (
-      <div>
-        <h1 className="title">Job Board</h1>
-        <JobList jobs={jobs} />
-      </div>
-    );
+const JobBoard = () => {
+  const { loading, error, data } = useQuery(LOAD_JOBS);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) {
+    return <div>Error</div>;
   }
-}
+
+  return (
+    <div>
+      <h1 className="title">Job Board</h1>
+      <JobList jobs={data.jobs} />
+    </div>
+  );
+};
+
+export default JobBoard;

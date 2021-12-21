@@ -1,20 +1,30 @@
-import React, { Component } from 'react';
-import { companies } from './fake-data';
+import React from "react";
+import { useLocation } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { JobList } from "./JobList";
+import { LOAD_COMPANY } from "./graphQL/request";
 
-export class CompanyDetail extends Component {
-  constructor(props) {
-    super(props);
-    const {companyId} = this.props.match.params;
-    this.state = {company: companies.find((company) => company.id === companyId)};
+const CompanyDetails = () => {
+  const location = useLocation();
+  const { companyId: id } = location.state;
+
+  const { loading, error, data } = useQuery(LOAD_COMPANY, {
+    variables: { id },
+  });
+
+  if (loading) return <div>Loading...</div>;
+  if (error) {
+    return <div>Error...</div>;
   }
 
-  render() {
-    const {company} = this.state;
-    return (
-      <div>
-        <h1 className="title">{company.name}</h1>
-        <div className="box">{company.description}</div>
-      </div>
-    );
-  }
-}
+  return (
+    <div>
+      <h1 className="title">{data.company.name}</h1>
+      <div className="box">{data.company.description}</div>
+      <h5 className="title">Jobs at {data.company.name}</h5>
+      <JobList jobs={data.company.jobs} />
+    </div>
+  );
+};
+
+export default CompanyDetails;
