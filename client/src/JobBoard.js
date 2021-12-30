@@ -4,7 +4,9 @@ import { JobList } from "./JobList";
 import { useQuery } from "@apollo/client";
 
 const JobBoard = () => {
-  const { loading, error, data } = useQuery(LOAD_JOBS);
+  const { loading, error, data } = useQuery(LOAD_JOBS, {
+    fetchPolicy: "no-cache",
+  });
 
   if (loading) return <div>Loading...</div>;
   if (error) {

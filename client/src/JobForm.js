@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { CREATE_JOB } from "./graphQL/request";
 import { useMutation } from "@apollo/client";
 import { useHistory } from "react-router-dom";
-import { getAccessToken, isLoggedIn } from "./auth";
 
 const JobForm = () => {
   const [title, setTitle] = useState("");
@@ -10,19 +9,7 @@ const JobForm = () => {
 
   const history = useHistory();
 
-  //user has to be logged in and we need to pass headers with token
-  const isUserLogged = isLoggedIn();
-  const token = getAccessToken();
-
-  const headers = {
-    authorization: isUserLogged ? `Bearer ${token}` : "",
-  };
-
-  const [createJob, { loading, error, data }] = useMutation(CREATE_JOB, {
-    context: {
-      headers,
-    },
-  });
+  const [createJob, { loading, error, data }] = useMutation(CREATE_JOB);
 
   const handleTitleChange = (event) => {
     setTitle(event.target.value);

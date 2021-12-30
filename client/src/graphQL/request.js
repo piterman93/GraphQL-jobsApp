@@ -48,6 +48,7 @@ export const CREATE_JOB = gql`
     job: createJob(input: $input) {
       id
       title
+      description
       company {
         id
         name
